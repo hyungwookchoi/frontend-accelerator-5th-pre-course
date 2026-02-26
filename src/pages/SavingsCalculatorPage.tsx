@@ -1,17 +1,15 @@
-import {
-  Assets,
-  Border,
-  colors,
-  ListHeader,
-  ListRow,
-  NavigationBar,
-  SelectBottomSheet,
-  Spacing,
-  Tab,
-  TextField,
-} from 'tosslib';
+import { useSuspenseQuery } from '@tanstack/react-query';
+import { getSavingsProducts } from 'remotes/fetcher';
+import { Border, colors, ListRow, NavigationBar, SelectBottomSheet, Spacing, Tab, TextField } from 'tosslib';
 
 export function SavingsCalculatorPage() {
+  const { data: savingsProducts } = useSuspenseQuery({
+    queryKey: ['savingsProducts'],
+    queryFn: getSavingsProducts,
+  });
+
+  console.log(savingsProducts);
+
   return (
     <>
       <NavigationBar title="적금 계산기" />
@@ -41,7 +39,28 @@ export function SavingsCalculatorPage() {
         </Tab.Item>
       </Tab>
 
-      <ListRow
+      {savingsProducts.map(product => {
+        return (
+          <ListRow
+            key={product.id}
+            contents={
+              <ListRow.Texts
+                type="3RowTypeA"
+                top={product.name}
+                topProps={{ fontSize: 16, fontWeight: 'bold', color: colors.grey900 }}
+                middle={`연 이자율: ${product.annualRate}%`}
+                middleProps={{ fontSize: 14, color: colors.blue600, fontWeight: 'medium' }}
+                bottom={`${product.minMonthlyAmount.toLocaleString('ko-KR')}원 ~ ${product.maxMonthlyAmount.toLocaleString('ko-KR')}원 | ${product.availableTerms}개월`}
+                bottomProps={{ fontSize: 13, color: colors.grey600 }}
+              />
+            }
+            // right={<Assets.Icon name="icon-check-circle-green" />}
+            onClick={() => {}}
+          />
+        );
+      })}
+
+      {/* <ListRow
         contents={
           <ListRow.Texts
             type="3RowTypeA"
@@ -69,7 +88,7 @@ export function SavingsCalculatorPage() {
           />
         }
         onClick={() => {}}
-      />
+      /> */}
 
       {/* 아래는 계산 결과 탭 내용이에요. 계산 결과 탭을 구현할 때 주석을 해제해주세요. */}
       {/* <Spacing size={8} />
