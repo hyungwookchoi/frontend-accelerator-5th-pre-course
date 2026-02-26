@@ -1,14 +1,17 @@
 import { useSuspenseQuery } from '@tanstack/react-query';
+import { useState } from 'react';
 import { getSavingsProducts } from 'remotes/fetcher';
 import { Border, colors, ListRow, NavigationBar, SelectBottomSheet, Spacing, Tab, TextField } from 'tosslib';
 
 export function SavingsCalculatorPage() {
+  const [targetAmount, setTargetAmount] = useState(0);
+  const [monthlyPayment, setMonthlyPayment] = useState(0);
+  const [term, setTerm] = useState(12);
+
   const { data: savingsProducts } = useSuspenseQuery({
     queryKey: ['savingsProducts'],
     queryFn: getSavingsProducts,
   });
-
-  console.log(savingsProducts);
 
   return (
     <>
@@ -16,11 +19,37 @@ export function SavingsCalculatorPage() {
 
       <Spacing size={16} />
 
-      <TextField label="목표 금액" placeholder="목표 금액을 입력하세요" suffix="원" />
+      <TextField
+        label="목표 금액"
+        placeholder="목표 금액을 입력하세요"
+        suffix="원"
+        value={targetAmount.toLocaleString('ko-KR')}
+        onChange={e => {
+          const value = e.target.value.replace(/,/g, '');
+          if (isNaN(Number(value))) {
+            return;
+          }
+
+          setTargetAmount(Number(value));
+        }}
+      />
       <Spacing size={16} />
-      <TextField label="월 납입액" placeholder="희망 월 납입액을 입력하세요" suffix="원" />
+      <TextField
+        label="월 납입액"
+        placeholder="희망 월 납입액을 입력하세요"
+        suffix="원"
+        value={monthlyPayment.toLocaleString()}
+        onChange={e => {
+          const value = e.target.value.replace(/,/g, '');
+          if (isNaN(Number(value))) {
+            return;
+          }
+
+          setMonthlyPayment(Number(value));
+        }}
+      />
       <Spacing size={16} />
-      <SelectBottomSheet label="저축 기간" title="저축 기간을 선택해주세요" value={12} onChange={() => {}}>
+      <SelectBottomSheet label="저축 기간" title="저축 기간을 선택해주세요" value={term} onChange={setTerm}>
         <SelectBottomSheet.Option value={6}>6개월</SelectBottomSheet.Option>
         <SelectBottomSheet.Option value={12}>12개월</SelectBottomSheet.Option>
         <SelectBottomSheet.Option value={24}>24개월</SelectBottomSheet.Option>
@@ -39,26 +68,34 @@ export function SavingsCalculatorPage() {
         </Tab.Item>
       </Tab>
 
-      {savingsProducts.map(product => {
-        return (
-          <ListRow
-            key={product.id}
-            contents={
-              <ListRow.Texts
-                type="3RowTypeA"
-                top={product.name}
-                topProps={{ fontSize: 16, fontWeight: 'bold', color: colors.grey900 }}
-                middle={`연 이자율: ${product.annualRate}%`}
-                middleProps={{ fontSize: 14, color: colors.blue600, fontWeight: 'medium' }}
-                bottom={`${product.minMonthlyAmount.toLocaleString('ko-KR')}원 ~ ${product.maxMonthlyAmount.toLocaleString('ko-KR')}원 | ${product.availableTerms}개월`}
-                bottomProps={{ fontSize: 13, color: colors.grey600 }}
-              />
-            }
-            // right={<Assets.Icon name="icon-check-circle-green" />}
-            onClick={() => {}}
-          />
-        );
-      })}
+      {savingsProducts
+        .filter(product => {
+          return (
+            product.minMonthlyAmount < monthlyPayment &&
+            product.maxMonthlyAmount > monthlyPayment &&
+            product.availableTerms === term
+          );
+        })
+        .map(product => {
+          return (
+            <ListRow
+              key={product.id}
+              contents={
+                <ListRow.Texts
+                  type="3RowTypeA"
+                  top={product.name}
+                  topProps={{ fontSize: 16, fontWeight: 'bold', color: colors.grey900 }}
+                  middle={`연 이자율: ${product.annualRate}%`}
+                  middleProps={{ fontSize: 14, color: colors.blue600, fontWeight: 'medium' }}
+                  bottom={`${product.minMonthlyAmount.toLocaleString('ko-KR')}원 ~ ${product.maxMonthlyAmount.toLocaleString('ko-KR')}원 | ${product.availableTerms}개월`}
+                  bottomProps={{ fontSize: 13, color: colors.grey600 }}
+                />
+              }
+              // right={<Assets.Icon name="icon-check-circle-green" />}
+              onClick={() => {}}
+            />
+          );
+        })}
 
       {/* <ListRow
         contents={
