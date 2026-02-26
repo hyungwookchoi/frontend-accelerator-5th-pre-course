@@ -1,6 +1,6 @@
 import { http } from 'tosslib';
 
-interface SavingsProduct {
+export interface SavingsProduct {
   id: string;
   name: string;
   annualRate: number;
@@ -9,7 +9,7 @@ interface SavingsProduct {
   availableTerms: number;
 }
 
-type GetSavingsProductsResponse = SavingsProduct[];
+export type GetSavingsProductsResponse = SavingsProduct[];
 
 export const getSavingsProducts = () => {
   return http.get<GetSavingsProductsResponse>('/api/savings-products');

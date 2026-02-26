@@ -1,12 +1,14 @@
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { useState } from 'react';
-import { getSavingsProducts } from 'remotes/fetcher';
-import { Border, colors, ListRow, NavigationBar, SelectBottomSheet, Spacing, Tab, TextField } from 'tosslib';
+import { getSavingsProducts, SavingsProduct } from 'remotes/fetcher';
+import { Assets, Border, colors, ListRow, NavigationBar, SelectBottomSheet, Spacing, Tab, TextField } from 'tosslib';
 
 export function SavingsCalculatorPage() {
   const [targetAmount, setTargetAmount] = useState(0);
   const [monthlyPayment, setMonthlyPayment] = useState(0);
   const [term, setTerm] = useState(12);
+
+  const [selectedSavingsProduct, setSelectedSavingsProduct] = useState<SavingsProduct | null>(null);
 
   const { data: savingsProducts } = useSuspenseQuery({
     queryKey: ['savingsProducts'],
@@ -91,8 +93,10 @@ export function SavingsCalculatorPage() {
                   bottomProps={{ fontSize: 13, color: colors.grey600 }}
                 />
               }
-              // right={<Assets.Icon name="icon-check-circle-green" />}
-              onClick={() => {}}
+              right={selectedSavingsProduct?.id === product.id ? <Assets.Icon name="icon-check-circle-green" /> : null}
+              onClick={() => {
+                setSelectedSavingsProduct(product);
+              }}
             />
           );
         })}
